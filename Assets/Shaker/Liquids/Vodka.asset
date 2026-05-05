@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f6a2513e5da040949b965005f800ffe4, type: 3}
-  m_Name: Generic
+  m_Name: Vodka
   m_EditorClassIdentifier: 
-  liquidName: MIERDA
+  liquidName: Vodka
   description: 
-  liquidColor: {r: 0.7169812, g: 0.36503398, b: 0, a: 1}
+  liquidColor: {r: 1, g: 1, b: 1, a: 0.3529412}
   icon: {fileID: 0}

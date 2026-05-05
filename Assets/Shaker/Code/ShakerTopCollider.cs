@@ -12,8 +12,6 @@ using UnityEngine;
 [RequireComponent(typeof(Collider))]
 public class ShakerTopCollider : MonoBehaviour
 {
-    /// <summary>Referencia al Shaker padre (se busca automáticamente si no se asigna)</summary>
-    [Tooltip("Referencia al script Shaker del objeto padre. Se asigna automáticamente si se deja vacío.")]
     public Shaker parentShaker;
 
     private void Awake()

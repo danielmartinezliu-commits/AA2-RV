@@ -31,16 +31,12 @@ public enum MixLevel
 public class ShakerRecipeSO : ScriptableObject
 {
     [Header("Ingredientes")]
-    [Tooltip("Array de LiquidSO que forman los ingredientes de esta receta. " +
-             "El orden NO importa; la comprobación se hace por contenido.")]
     public LiquidSO[] ingredients;
 
     [Header("Nivel de mezcla requerido")]
-    [Tooltip("Nivel mínimo de mezcla necesario para obtener el resultado de esta receta")]
     public MixLevel requiredMixLevel;
 
     [Header("Resultado")]
-    [Tooltip("LiquidSO que se obtendrá al cumplir los requisitos de esta receta")]
     public LiquidSO result;
 
     /// <summary>

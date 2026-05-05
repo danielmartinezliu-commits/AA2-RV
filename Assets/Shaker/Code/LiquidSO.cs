@@ -8,21 +8,8 @@ using UnityEngine;
 public class LiquidSO : ScriptableObject
 {
     [Header("Identificación")]
-    [Tooltip("Nombre del líquido o ingrediente")]
     public string liquidName;
 
-    [Tooltip("Descripción del líquido o ingrediente")]
-    [TextArea]
-    public string description;
-
     [Header("Visual")]
-    [Tooltip("Color representativo del líquido")]
     public Color liquidColor = Color.white;
-
-    [Tooltip("Icono representativo del líquido (opcional)")]
-    public Sprite icon;
-
-    [Header("Prefab de salida")]
-    [Tooltip("Prefab que se instanciará al expulsar este líquido del shaker")]
-    public GameObject outputPrefab;
 }

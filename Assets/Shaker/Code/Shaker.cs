@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 /// <summary>
 /// Script principal del Shaker de bar para VR.
@@ -14,37 +15,25 @@ public class Shaker : MonoBehaviour
     // ─────────────────────────────────────────────────────────────
 
     [Header("Recetas")]
-    [Tooltip("Lista de todas las recetas disponibles que el shaker puede producir")]
     public ShakerRecipeSO[] allRecipes;
 
-    [Tooltip("LiquidSO genérico que se devuelve cuando el contenido no coincide con ninguna receta")]
     public LiquidSO genericLiquid;
 
     [Header("Tapa")]
-    [Tooltip("Transform de la tapa del shaker (objeto separado con su propio grabable de VR)")]
-    public Transform lid;
-
-    [Tooltip("Transform del punto de anclaje de la tapa en la parte superior del shaker")]
-    public Transform lidAnchor;
-
-    [Tooltip("Distancia máxima a la que la tapa se adhiere automáticamente al shaker (en metros)")]
-    public float lidSnapDistance = 0.05f;
+    public ShakerLid shakerLid;
 
     [Header("Vertido")]
-    [Tooltip("Ángulo de inclinación (en grados) a partir del cual el shaker vierte su contenido (sin tapa)")]
     public float pourAngleThreshold = 100f;
 
-    [Tooltip("Punto de spawn de los objetos vertidos (parte superior / boca del shaker)")]
     public Transform pourPoint;
 
+    public GameObject outputPrefab;
+
     [Header("Medidor de Shake")]
-    [Tooltip("Umbral mínimo de delta de movimiento (metros/frame) para que empiece a sumar al medidor")]
     public float movementDeltaThreshold = 0.05f;
 
-    [Tooltip("Umbral mínimo de delta de rotación (grados/frame) para que empiece a sumar al medidor")]
     public float rotationDeltaThreshold = 5f;
 
-    [Tooltip("Multiplicador que escala cuánto suman los deltas al medidor de shake")]
     public float shakeSensitivity = 1f;
 
     // ─────────────────────────────────────────────────────────────
@@ -75,9 +64,11 @@ public class Shaker : MonoBehaviour
     // ─────────────────────────────────────────────────────────────
     //  UNITY LIFECYCLE
     // ─────────────────────────────────────────────────────────────
+    private XRGrabInteractable _grabInteractable;
 
     private void Awake()
     {
+        _grabInteractable = GetComponent<XRGrabInteractable>();
         _rb = GetComponent<Rigidbody>();
     }
 
@@ -90,90 +81,34 @@ public class Shaker : MonoBehaviour
 
     private void FixedUpdate()
     {
-        HandleLidSnapping();
-        HandleShaking();
+        if (_grabInteractable.isSelected)
+            HandleShaking();
         HandlePouring();
     }
 
     // ─────────────────────────────────────────────────────────────
-    //  TAPA
+    //  TAPA  (notificaciones entrantes desde ShakerLid)
     // ─────────────────────────────────────────────────────────────
 
     /// <summary>
-    /// Comprueba si la tapa suelta está lo suficientemente cerca del punto de anclaje
-    /// para adherirse automáticamente al shaker.
+    /// Llamado por ShakerLid cuando la tapa se adhiere al shaker.
     /// </summary>
-    private void HandleLidSnapping()
+    public void NotifyLidAttached()
     {
-        if (lid == null || lidAnchor == null)
-            return;
-
-        // Si la tapa ya está adherida, verificar si el jugador la está agarrando (para despegarla)
-        if (_lidAttached)
-        {
-            // La tapa se desadhiere cuando el jugador la agarra: la lógica de grab de VR
-            // debe llamar a DetachLid() al cogerla. No se gestiona aquí para separar responsabilidades.
-            return;
-        }
-
-        // Comprobar distancia entre la tapa y el punto de anclaje
-        float distance = Vector3.Distance(lid.position, lidAnchor.position);
-        if (distance <= lidSnapDistance)
-        {
-            AttachLid();
-        }
-    }
-
-    /// <summary>
-    /// Adhiere la tapa al shaker, bloqueando su Transform al punto de anclaje.
-    /// </summary>
-    public void AttachLid()
-    {
-        if (lid == null || lidAnchor == null)
-            return;
-
         _lidAttached = true;
         _lidEverAttached = true;
-
-        // Emparentar la tapa al shaker y ajustar su Transform al ancla
-        lid.SetParent(transform);
-        lid.localPosition = lidAnchor.localPosition;
-        lid.localRotation = lidAnchor.localRotation;
-
-        // Desactivar la física de la tapa mientras está adherida
-        Rigidbody lidRb = lid.GetComponent<Rigidbody>();
-        if (lidRb != null)
-        {
-            lidRb.isKinematic = true;
-        }
-
-        Debug.Log("[Shaker] Tapa adherida al shaker.");
+        Debug.Log("[Shaker] Tapa adherida notificada.");
     }
 
     /// <summary>
-    /// Desadhiere la tapa del shaker (llamar desde el sistema de grab de VR cuando el jugador la coge).
+    /// Llamado por ShakerLid cuando la tapa se retira del shaker.
     /// </summary>
-    public void DetachLid()
+    public void NotifyLidDetached()
     {
-        if (!_lidAttached || lid == null)
-            return;
-
         _lidAttached = false;
-
-        // Desemparentar la tapa
-        lid.SetParent(null);
-
-        // Reactivar la física de la tapa
-        Rigidbody lidRb = lid.GetComponent<Rigidbody>();
-        if (lidRb != null)
-        {
-            lidRb.isKinematic = false;
-        }
-
-        // Al quitar la tapa se resetea el estado de vertido para permitir verter de nuevo
+        // Al quitar la tapa se permite volver a verter en el siguiente ciclo
         _hasPouredContent = false;
-
-        Debug.Log("[Shaker] Tapa retirada del shaker.");
+        Debug.Log("[Shaker] Tapa retirada notificada.");
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -251,6 +186,7 @@ public class Shaker : MonoBehaviour
             }
 
             _shakeMeter = Mathf.Clamp(_shakeMeter + contribution, 0f, 100f);
+            Debug.Log("SE ME MUEVEEEEE " + _shakeMeter);
         }
 
         // Actualizar posición y rotación previas para el siguiente frame
@@ -361,31 +297,31 @@ public class Shaker : MonoBehaviour
     }
 
     /// <summary>
-    /// Instancia el prefab de salida del LiquidSO en la boca del shaker
-    /// y le asigna su ShakerInput correspondiente.
+    /// Instancia el prefab de salida del propio Shaker en la boca del shaker,
+    /// asigna el LiquidSO al ShakerInput y aplica el color del líquido al material.
     /// </summary>
-    /// <param name="liquid">LiquidSO cuyo prefab se instanciará</param>
+    /// <param name="liquid">LiquidSO que se asignará al objeto instanciado</param>
     private void SpawnOutput(LiquidSO liquid)
     {
-        if (liquid.outputPrefab == null)
+        if (outputPrefab == null)
         {
-            Debug.LogWarning($"[Shaker] El LiquidSO '{liquid.liquidName}' no tiene outputPrefab asignado.");
+            Debug.LogWarning("[Shaker] No hay outputPrefab asignado en el Shaker.");
             return;
         }
 
         Vector3 spawnPosition = pourPoint != null ? pourPoint.position : transform.position;
-        Quaternion spawnRotation = Quaternion.identity;
 
-        GameObject spawnedObject = Instantiate(liquid.outputPrefab, spawnPosition, spawnRotation);
+        GameObject spawnedObject = Instantiate(outputPrefab, spawnPosition, Quaternion.identity);
 
-        // Asegurarse de que el objeto instanciado tiene ShakerInput y asignar el LiquidSO
+        // Obtener o añadir el ShakerInput al objeto instanciado
         ShakerInput shakerInput = spawnedObject.GetComponent<ShakerInput>();
         if (shakerInput == null)
-        {
             shakerInput = spawnedObject.AddComponent<ShakerInput>();
-        }
 
+        // Asignar el LiquidSO y aplicar el color al material (inicialización manual
+        // porque Awake ya se ejecutó al instanciar antes de que asignemos liquidData)
         shakerInput.liquidData = liquid;
+        shakerInput.ApplyLiquidColor();
 
         Debug.Log($"[Shaker] Objeto instanciado: {spawnedObject.name} con LiquidSO: {liquid.liquidName}");
     }
@@ -401,8 +337,9 @@ public class Shaker : MonoBehaviour
 
     /// <summary>
     /// Indica si la tapa está actualmente adherida al shaker.
+    /// Si hay un ShakerLid asignado se consulta directamente su estado.
     /// </summary>
-    public bool IsLidAttached() => _lidAttached;
+    public bool IsLidAttached() => shakerLid != null ? shakerLid.IsAttached : _lidAttached;
 
     /// <summary>
     /// Reinicia completamente el estado del shaker (vacía el contenido y el medidor de shake).
