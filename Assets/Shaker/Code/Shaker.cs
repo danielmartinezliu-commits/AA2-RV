@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 /// <summary>
@@ -35,7 +36,8 @@ public class Shaker : MonoBehaviour
     public float rotationDeltaThreshold = 5f;
 
     public float shakeSensitivity = 1f;
-
+    public Transform shakeBar;
+    public Image shakeProcess;
     // ─────────────────────────────────────────────────────────────
     //  ESTADO INTERNO
     // ─────────────────────────────────────────────────────────────
@@ -70,6 +72,8 @@ public class Shaker : MonoBehaviour
     {
         _grabInteractable = GetComponent<XRGrabInteractable>();
         _rb = GetComponent<Rigidbody>();
+
+        shakeBar.GetComponentInParent<Canvas>().worldCamera = Camera.main;
     }
 
     private void Start()
@@ -85,6 +89,17 @@ public class Shaker : MonoBehaviour
             HandleShaking();
         HandlePouring();
     }
+
+    private void Update()
+    {
+        bool active = _grabInteractable.isSelected && _lidAttached;
+        shakeBar.gameObject.SetActive(active);
+        if (active)
+        {
+            //shakeBar.transform.position = transform.position + new Vector3(0, 1.5f);
+        }
+    }
+
 
     // ─────────────────────────────────────────────────────────────
     //  TAPA  (notificaciones entrantes desde ShakerLid)
@@ -192,6 +207,9 @@ public class Shaker : MonoBehaviour
         // Actualizar posición y rotación previas para el siguiente frame
         _previousPosition = currentPosition;
         _previousRotation = currentRotation;
+
+
+        shakeProcess.fillAmount = _shakeMeter / 100;
     }
 
     /// <summary>
