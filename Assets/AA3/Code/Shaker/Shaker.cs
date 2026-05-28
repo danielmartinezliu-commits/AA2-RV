@@ -243,7 +243,7 @@ public class Shaker : MonoBehaviour
     private void HandlePouring()
     {
         // No verter si la tapa está puesta, si no hay contenido o si ya se vertió en este ciclo
-        if (_lidAttached || _contents.Count == 0 || _hasPouredContent)
+        if (_lidAttached || _contents.Count == 0)
             return;
 
         // Calcular el ángulo entre el eje "arriba" del shaker y el "arriba" del mundo
@@ -269,7 +269,6 @@ public class Shaker : MonoBehaviour
             Debug.LogWarning("[Shaker] No se encontró resultado (ni genérico). Asigna genericLiquid en el Inspector.");
             return;
         }
-
 
         Debug.Log($"[Shaker] Vertiendo: {outputLiquid.liquidName} " + $"(Mezcla: {GetCurrentMixLevel()}, Medidor: {_shakeMeter:F1})");
 
