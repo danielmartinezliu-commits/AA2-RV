@@ -10,9 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f6a2513e5da040949b965005f800ffe4, type: 3}
-  m_Name: Vodka
+  m_Name: Ron Blanco
   m_EditorClassIdentifier: 
-  liquidName: Vodka
-  description: 
-  liquidColor: {r: 1, g: 1, b: 1, a: 0.3529412}
-  icon: {fileID: 0}
+  liquidName: Ron Blanco
+  liquidColor: {r: 1, g: 1, b: 1, a: 0.5882353}

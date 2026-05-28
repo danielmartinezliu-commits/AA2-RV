@@ -10,9 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f6a2513e5da040949b965005f800ffe4, type: 3}
-  m_Name: Generic
+  m_Name: El Cubalibre Blanco
   m_EditorClassIdentifier: 
-  liquidName: MIERDA
-  description: 
-  liquidColor: {r: 0.7169812, g: 0.36503398, b: 0, a: 1}
-  icon: {fileID: 0}
+  liquidName: El Cubalibre Blanco
+  liquidColor: {r: 1, g: 0.9913144, b: 0.75, a: 0.7647059}

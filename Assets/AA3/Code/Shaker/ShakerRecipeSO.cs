@@ -8,18 +8,7 @@ public enum MixLevel
 {
     /// <summary>Sin mezclar (0 - 19%)</summary>
     Unmixed = 0,
-
-    /// <summary>Poco mezclado (20 - 39%)</summary>
-    SlightlyMixed = 1,
-
-    /// <summary>Mezclado (40 - 59%)</summary>
-    Mixed = 2,
-
-    /// <summary>Bastante mezclado (60 - 79%)</summary>
-    WellMixed = 3,
-
-    /// <summary>Muy mezclado (80 - 100%)</summary>
-    FullyMixed = 4
+    Mixed = 1
 }
 
 /// <summary>

@@ -1,6 +1,4 @@
-using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
@@ -218,11 +216,8 @@ public class Shaker : MonoBehaviour
     /// </summary>
     public MixLevel GetCurrentMixLevel()
     {
-        if (_shakeMeter < 20f) return MixLevel.Unmixed;
-        if (_shakeMeter < 40f) return MixLevel.SlightlyMixed;
-        if (_shakeMeter < 60f) return MixLevel.Mixed;
-        if (_shakeMeter < 80f) return MixLevel.WellMixed;
-        return MixLevel.FullyMixed;
+        if (_shakeMeter < 33f) return MixLevel.Unmixed;
+        return MixLevel.Mixed;
     }
 
     /// <summary>
