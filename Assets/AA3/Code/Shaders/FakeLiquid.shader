@@ -2,13 +2,13 @@ Shader "Custom/FakeLiquid"
 {
     Properties
     {
-        _Color        ("Liquid Color",    Color)             = (0.1, 0.5, 0.9, 0.85)
-        _TopColor     ("Surface Color",   Color)             = (0.4, 0.75, 1.0, 1.0)
-        _FillAmount   ("Fill Amount",     Range(0.0, 1.0))   = 0.5
-        _LocalBoundMin("Bound Min Y",     Float)             = -0.5
-        _LocalBoundMax("Bound Max Y",     Float)             =  0.5
-        _WobbleX      ("Wobble X",        Float)             = 0.0
-        _WobbleZ      ("Wobble Z",        Float)             = 0.0
+        _Color        ("Liquid Color", Color) = (0.1, 0.5, 0.9, 0.85)
+        _TopColor     ("Surface Color", Color) = (0.4, 0.75, 1.0, 1.0)
+        _FillAmount   ("Fill Amount", Range(0.0, 1.0)) = 0.5
+        _LocalBoundMin("Bound Min Y", Float) = -0.5
+        _LocalBoundMax("Bound Max Y", Float) =  0.5
+        _WobbleX      ("Wobble X", Float) = 0.0
+        _WobbleZ      ("Wobble Z", Float) = 0.0
         _SurfaceWidth ("Surface Width",   Range(0.001, 0.08)) = 0.015
     }
 
@@ -97,47 +97,47 @@ Shader "Custom/FakeLiquid"
                 // Transform world-up into object space.  The result points "up"
                 // in local space regardless of how the bottle is rotated.
                 // Normalising makes virtualH comparable to localBound values.
-                float3 worldUpOS  = normalize(mul((float3x3)unity_WorldToObject,
+                float3 worldUpOS = normalize(mul((float3x3)unity_WorldToObject,
                                                    float3(0.0, 1.0, 0.0)));
 
                 // "How high is this vertex along the world-up direction?" (local units)
-                float  virtualH   = dot(IN.positionOS, worldUpOS);
+                float virtualH = dot(IN.positionOS, worldUpOS);
 
                 // Fill threshold in the same local-unit space
-                float  fillH      = lerp(_LocalBoundMin, _LocalBoundMax, _FillAmount);
+                float fillH = lerp(_LocalBoundMin, _LocalBoundMax, _FillAmount);
 
                 // Wobble: world-space sine wave → convert to local-unit offset.
                 // invScale ≈ 1/uniformScale, maps world-Y amplitude to local-Y amplitude.
-                float  invScale   = length(mul((float3x3)unity_WorldToObject,
+                float invScale   = length(mul((float3x3)unity_WorldToObject,
                                                float3(0.0, 1.0, 0.0)));
-                float  t          = _Time.y;
-                float  wobbleWS   = sin(IN.positionWS.x * 8.0 + t * 4.0) * _WobbleX * 0.04
+                float t = _Time.y;
+                float wobbleWS = sin(IN.positionWS.x * 8.0 + t * 4.0) * _WobbleX * 0.04
                                   + sin(IN.positionWS.z * 8.0 + t * 3.5) * _WobbleZ * 0.04;
-                float  wobbleLS   = wobbleWS * invScale;
+                float wobbleLS = wobbleWS * invScale;
 
-                float  surface    = fillH + wobbleLS;
+                float surface = fillH + wobbleLS;
 
                 // Discard anything above the liquid surface
                 clip(surface - virtualH);
 
                 // --- Surface highlight ----------------------------------------
                 float distToSurface = abs(surface - virtualH);
-                float surfaceMask   = 1.0 - smoothstep(0.0, _SurfaceWidth, distToSurface);
+                float surfaceMask = 1.0 - smoothstep(0.0, _SurfaceWidth, distToSurface);
 
                 // --- Simple lighting ------------------------------------------
                 float3 N = normalize(frontFace ? IN.normalWS : -IN.normalWS);
                 float3 V = normalize(IN.viewDirWS);
 
-                Light  mainLight = GetMainLight();
-                float  NdotL     = saturate(dot(N, mainLight.direction));
-                float3 lighting  = mainLight.color * (0.35 + 0.65 * NdotL);
+                Light mainLight = GetMainLight();
+                float NdotL = saturate(dot(N, mainLight.direction));
+                float3 lighting = mainLight.color * (0.35 + 0.65 * NdotL);
 
                 // Subtle Fresnel rim
                 float fresnel = pow(1.0 - saturate(dot(N, V)), 2.5) * 0.25;
 
                 // --- Final colour ---------------------------------------------
-                half4 col  = lerp(_Color, _TopColor, surfaceMask);
-                col.rgb    = col.rgb * lighting + fresnel;
+                half4 col = lerp(_Color, _TopColor, surfaceMask);
+                col.rgb = col.rgb * lighting + fresnel;
 
                 // Interior (back) faces are slightly darker
                 if (!frontFace) col.rgb *= 0.70;
