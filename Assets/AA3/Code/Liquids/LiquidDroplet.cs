@@ -79,6 +79,17 @@ public class LiquidDroplet : MonoBehaviour
         gameObject.SetActive(true);
     }
 
+    public void SpawnBien(Vector3 position, Vector3 velocity, float lifetime)
+    {
+        _elapsed = 0f;
+        _lifetime = lifetime;
+
+        transform.position = position;
+        _rb.linearVelocity = velocity;
+        _rb.angularVelocity = Vector3.zero;
+
+        gameObject.SetActive(true);
+    }
     /// <summary>Devuelve la gota al pool (llamada automáticamente al expirar o por OnCollisionEnter).</summary>
     public void Release()
     {

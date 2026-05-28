@@ -46,6 +46,7 @@ public class ShakerTopCollider : MonoBehaviour
         ShakerInput shakerInput = other.GetComponent<ShakerInput>();
         if (shakerInput != null)
         {
+            Debug.Log("AAAAAAAAAAAAA " + shakerInput.liquidData.name);
             parentShaker.TryAddIngredient(other.gameObject);
         }
     }

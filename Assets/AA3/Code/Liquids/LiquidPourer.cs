@@ -1,3 +1,4 @@
+using System.Net.NetworkInformation;
 using UnityEngine;
 
 /// <summary>
@@ -12,6 +13,9 @@ using UnityEngine;
 public class LiquidPourer : MonoBehaviour
 {
     // ── Referencias ───────────────────────────────────────────────────────────
+
+    [SerializeField]
+    private LiquidSO contentChat;
 
     [Header("Referencias")]
     [SerializeField] LiquidController  liquidController;
@@ -150,7 +154,10 @@ public class LiquidPourer : MonoBehaviour
         Vector3 vel = Vector3.down * (dropSpeed * Mathf.Lerp(0.3f, 1f, Mathf.Clamp01(CurrentPourStrength)))
                     + Random.insideUnitSphere * dropSpread;
 
+        drop.GetComponent<ShakerInput>().liquidData = contentChat;
+        drop.GetComponent<ShakerInput>().ApplyLiquidColor();
         drop.Spawn(pool, pos, vel, dropLifetime);
+
     }
 
     bool ValidateReferences()

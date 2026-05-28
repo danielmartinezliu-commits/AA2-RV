@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 3602318279766173189}
   - component: {fileID: 4769523279574538299}
   - component: {fileID: 6578623389953841596}
+  - component: {fileID: 7175642216026889165}
   m_Layer: 8
   m_Name: DropletPrefab
   m_TagString: Untagged
@@ -150,3 +151,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dropSize: 0.04
+--- !u!114 &7175642216026889165
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7667916695844706775}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3a3faa965c998d4796e343951210d16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  liquidData: {fileID: 0}
+  targetRenderer: {fileID: 1485591564409351965}

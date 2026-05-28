@@ -1,4 +1,6 @@
+using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
@@ -14,7 +16,6 @@ public class Shaker : MonoBehaviour
     // ─────────────────────────────────────────────────────────────
     //  CONFIGURACIÓN INSPECTOR
     // ─────────────────────────────────────────────────────────────
-
     [Header("Recetas")]
     public ShakerRecipeSO[] allRecipes;
 
@@ -68,6 +69,7 @@ public class Shaker : MonoBehaviour
     // ─────────────────────────────────────────────────────────────
     private XRGrabInteractable _grabInteractable;
 
+    private int contentAmmount;
     private void Awake()
     {
         _grabInteractable = GetComponent<XRGrabInteractable>();
@@ -162,7 +164,7 @@ public class Shaker : MonoBehaviour
         _contents.Add(shakerInput.liquidData);
         Debug.Log($"[Shaker] Ingrediente añadido: {shakerInput.liquidData.liquidName}. " +
                   $"Total ingredientes: {_contents.Count}");
-
+        contentAmmount = 50;
         Destroy(inputObject);
     }
 
@@ -201,7 +203,6 @@ public class Shaker : MonoBehaviour
             }
 
             _shakeMeter = Mathf.Clamp(_shakeMeter + contribution, 0f, 100f);
-            Debug.Log("SE ME MUEVEEEEE " + _shakeMeter);
         }
 
         // Actualizar posición y rotación previas para el siguiente frame
@@ -237,6 +238,8 @@ public class Shaker : MonoBehaviour
     /// Comprueba si el shaker está suficientemente inclinado para verter su contenido.
     /// Solo actúa si la tapa no está puesta y hay ingredientes dentro.
     /// </summary>
+    private float timePouringWaited = 0;
+    private float timePouring = 0.1f;
     private void HandlePouring()
     {
         // No verter si la tapa está puesta, si no hay contenido o si ya se vertió en este ciclo
@@ -245,9 +248,10 @@ public class Shaker : MonoBehaviour
 
         // Calcular el ángulo entre el eje "arriba" del shaker y el "arriba" del mundo
         float angle = Vector3.Angle(transform.up, Vector3.up);
-
-        if (angle >= pourAngleThreshold)
+        timePouringWaited += Time.fixedDeltaTime;
+        if (angle >= pourAngleThreshold && timePouringWaited >= timePouring )
         {
+            timePouringWaited = 0;
             PourContent();
         }
     }
@@ -258,8 +262,6 @@ public class Shaker : MonoBehaviour
     /// </summary>
     private void PourContent()
     {
-        _hasPouredContent = true;
-
         LiquidSO outputLiquid = ResolveRecipe();
 
         if (outputLiquid == null)
@@ -268,15 +270,19 @@ public class Shaker : MonoBehaviour
             return;
         }
 
-        Debug.Log($"[Shaker] Vertiendo: {outputLiquid.liquidName} " +
-                  $"(Mezcla: {GetCurrentMixLevel()}, Medidor: {_shakeMeter:F1})");
+
+        Debug.Log($"[Shaker] Vertiendo: {outputLiquid.liquidName} " + $"(Mezcla: {GetCurrentMixLevel()}, Medidor: {_shakeMeter:F1})");
 
         SpawnOutput(outputLiquid);
 
-        // Limpiar el estado del shaker tras verter
-        _contents.Clear();
-        _shakeMeter = 0f;
-        _lidEverAttached = false;
+        contentAmmount--;
+        if (contentAmmount <= 0)
+        {
+            // Limpiar el estado del shaker tras verter
+            _contents.Clear();
+            _shakeMeter = 0f;
+            _lidEverAttached = false;
+        }
     }
 
     /// <summary>
@@ -319,29 +325,28 @@ public class Shaker : MonoBehaviour
     /// asigna el LiquidSO al ShakerInput y aplica el color del líquido al material.
     /// </summary>
     /// <param name="liquid">LiquidSO que se asignará al objeto instanciado</param>
+
     private void SpawnOutput(LiquidSO liquid)
     {
+
         if (outputPrefab == null)
         {
             Debug.LogWarning("[Shaker] No hay outputPrefab asignado en el Shaker.");
             return;
         }
 
-        Vector3 spawnPosition = pourPoint != null ? pourPoint.position : transform.position;
 
-        GameObject spawnedObject = Instantiate(outputPrefab, spawnPosition, Quaternion.identity);
+        LiquidDroplet drop = Instantiate(outputPrefab).GetComponent<LiquidDroplet>();
+        if (drop == null) return;
 
-        // Obtener o añadir el ShakerInput al objeto instanciado
-        ShakerInput shakerInput = spawnedObject.GetComponent<ShakerInput>();
-        if (shakerInput == null)
-            shakerInput = spawnedObject.AddComponent<ShakerInput>();
+        Debug.Log($"[Shaker] Objeto instanciado: {drop.name} con LiquidSO: {liquid.liquidName}");
+        Vector3 pos = pourPoint.position;
+        Vector3 vel = Vector3.down;
 
-        // Asignar el LiquidSO y aplicar el color al material (inicialización manual
-        // porque Awake ya se ejecutó al instanciar antes de que asignemos liquidData)
-        shakerInput.liquidData = liquid;
-        shakerInput.ApplyLiquidColor();
+        drop.GetComponent<ShakerInput>().liquidData = liquid;
+        drop.GetComponent<ShakerInput>().ApplyLiquidColor();
+        drop.SpawnBien(pos, vel, 10);
 
-        Debug.Log($"[Shaker] Objeto instanciado: {spawnedObject.name} con LiquidSO: {liquid.liquidName}");
     }
 
     // ─────────────────────────────────────────────────────────────

@@ -31,12 +31,16 @@ public enum MixLevel
 public class ShakerRecipeSO : ScriptableObject
 {
     [Header("Ingredientes")]
+    [Tooltip("Array de LiquidSO que forman los ingredientes de esta receta. " +
+             "El orden NO importa; la comprobación se hace por contenido.")]
     public LiquidSO[] ingredients;
 
     [Header("Nivel de mezcla requerido")]
+    [Tooltip("Nivel mínimo de mezcla necesario para obtener el resultado de esta receta")]
     public MixLevel requiredMixLevel;
 
     [Header("Resultado")]
+    [Tooltip("LiquidSO que se obtendrá al cumplir los requisitos de esta receta")]
     public LiquidSO result;
 
     /// <summary>
@@ -52,24 +56,21 @@ public class ShakerRecipeSO : ScriptableObject
         if (currentMixLevel < requiredMixLevel)
             return false;
 
-        // Verificar que la cantidad de ingredientes coincida
-        if (inputIngredients.Count != ingredients.Length)
-            return false;
-
-        // Copiar la lista de entrada para poder marcar los ingredientes ya usados
+        // Copiar la lista de entrada para poder marcar los ingredientes ya usados sin modificar el original
         var remaining = new System.Collections.Generic.List<LiquidSO>(inputIngredients);
 
         foreach (var required in ingredients)
         {
-            // Buscar el ingrediente requerido en la lista restante
+            // Buscar el ingrediente requerido en lo que queda de la lista
             int index = remaining.IndexOf(required);
             if (index < 0)
-                return false; // Ingrediente no encontrado
+                return false; // Falta algún ingrediente requerido por la receta
 
-            remaining.RemoveAt(index); // Marcar como usado
+            // Marcarlo como usado para respetar duplicados en la receta (ej: 2 limones → necesita al menos 2)
+            remaining.RemoveAt(index);
         }
 
-        // Si todos los ingredientes fueron encontrados y no sobra ninguno, la receta coincide
-        return remaining.Count == 0;
+        // Todos los ingredientes requeridos estaban presentes; los sobrantes en el shaker se ignoran
+        return true;
     }
 }
